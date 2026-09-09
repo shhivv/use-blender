@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.venv/
+artifacts/
+workspace/
+.env
+.DS_Store
+/experiments/

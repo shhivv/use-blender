@@ -1,0 +1,17 @@
+services:
+  blender:
+    image: use-blender:latest
+    build: .
+    ports:
+      - "127.0.0.1:${BLENDER_PORT:-8765}:8000"
+    volumes:
+      - blender-workspace:/workspace
+    environment:
+      RESOLUTION: ${RESOLUTION:-1280x800}
+      ENABLE_PYTHON: ${ENABLE_PYTHON:-0}
+      API_TOKEN: ${API_TOKEN:-}
+    shm_size: 256mb
+    cpus: 2
+    mem_limit: 4g
+volumes:
+  blender-workspace:

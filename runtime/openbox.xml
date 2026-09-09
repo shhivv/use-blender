@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <focus><focusNew>yes</focusNew><followMouse>no</followMouse></focus>
+  <desktops><number>1</number></desktops>
+  <applications>
+    <application class="Blender">
+      <decor>no</decor><maximized>yes</maximized><focus>yes</focus>
+    </application>
+  </applications>
+</openbox_config>
