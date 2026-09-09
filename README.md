@@ -11,11 +11,7 @@ Requires Docker. Build directly from GitHub and start Blender:
 
 ```sh
 docker build -t use-blender 'https://github.com/shhivv/use-blender.git#master'
-docker run -d --name use-blender \
-  -p 127.0.0.1:8765:8000 \
-  --shm-size=256m --cpus=2 --memory=4g \
-  -v use-blender-workspace:/workspace \
-  use-blender
+docker run -d --name use-blender -p 127.0.0.1:8765:8000 use-blender
 ```
 
 Once Blender is ready:
@@ -72,14 +68,16 @@ short: they run on Blender's main thread, and a timeout does not undo or stop th
 
 ## Configuration
 
-Defaults: **1280×800**, **2 CPUs**, **4 GiB memory limit**, host port **8765**.
+Default resolution: **1280×800**. The command above exposes the API on port **8765**.
 Pass environment variables with `docker run -e`, such as `-e RESOLUTION=1600x1000`.
 Change the host port in `-p` if needed. The API binds to localhost; set `API_TOKEN`
 to require bearer authentication.
 Only connect trusted clients, since Blender also exposes its own Python console.
 
-Saved files in `/workspace` persist in a Docker volume. `docker restart use-blender`
-starts a fresh scene; `docker stop use-blender` stops the service and keeps saved files.
+Optionally add `--cpus=2 --memory=4g` to limit resources, or
+`-v use-blender-workspace:/workspace` to reuse saved files across container replacements.
+`docker restart use-blender` starts a fresh scene; `docker stop use-blender`
+stops the service and keeps saved files.
 
 Includes Blender **5.0.1**. Tested on **Linux ARM64** through OrbStack;
 AMD64 has not yet been validated.
