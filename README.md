@@ -29,6 +29,7 @@ The image is built locally; there is no registry image to install.
 | --- | --- |
 | `GET /health` | Check readiness, version, and screen size |
 | `GET /screenshot` | Capture the desktop as PNG |
+| `GET /download?path=model.blend` | Download a saved file from `/workspace` |
 | `GET /state` | Get session metadata; includes scene details when Python is enabled |
 | `POST /actions` | Send mouse and keyboard actions |
 | `POST /python` | Run Python in the live Blender session (opt-in) |
@@ -60,11 +61,15 @@ curl http://127.0.0.1:8765/python \
   -H 'Content-Type: application/json' \
   -d '{"code":"bpy.ops.wm.save_as_mainfile(filepath=\"/workspace/model.blend\")"}'
 
-docker cp use-blender:/workspace/model.blend ./model.blend
+curl --fail 'http://127.0.0.1:8765/download?path=model.blend' -o model.blend
 ```
 
 `bpy` is available automatically. Set `result` to return a JSON value. Keep scripts
 short: they run on Blender's main thread, and a timeout does not undo or stop them.
+
+Downloads work for any file saved under `/workspace`, including renders and exports.
+Use a path relative to `/workspace` and URL-encode spaces or special characters.
+You can also save through Blender's UI; downloading does not require Python to be enabled.
 
 ## Configuration
 

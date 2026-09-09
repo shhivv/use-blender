@@ -6,16 +6,19 @@ from pathlib import Path
 import re
 import signal
 import socket
+import stat
 import subprocess
 import threading
 import time
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, quote, urlsplit
 
 from desktop import Desktop
 
 ROOT = Path("/tmp/use-blender")
 ROOT.mkdir(mode=0o700, exist_ok=True)
+WORKSPACE = Path("/workspace").resolve()
 TOKEN = os.environ.get("API_TOKEN", "")
 ENABLE_PYTHON = os.environ.get("ENABLE_PYTHON", "0").lower() in {"1", "true"}
 GENERATION = str(uuid.uuid4())
@@ -84,9 +87,52 @@ class Handler(BaseHTTPRequestHandler):
             return False
         return True
 
+    def download(self, query):
+        paths = parse_qs(query, keep_blank_values=True).get("path", [])
+        if len(paths) != 1 or not paths[0]:
+            return self.send(400, {"error": "Provide a path, e.g. /download?path=model.blend"})
+        try:
+            path = (WORKSPACE / paths[0]).resolve()
+            if not path.is_relative_to(WORKSPACE):
+                return self.send(403, {"error": "Files must be inside /workspace"})
+            if not path.is_file():
+                return self.send(404, {"error": "File not found"})
+            source = path.open("rb")
+        except (ValueError, RuntimeError):
+            return self.send(400, {"error": "Invalid file path"})
+        except PermissionError:
+            return self.send(403, {"error": "File is not readable"})
+        except OSError:
+            return self.send(404, {"error": "File not found"})
+
+        with source:
+            info = os.fstat(source.fileno())
+            if not stat.S_ISREG(info.st_mode):
+                return self.send(404, {"error": "File not found"})
+            self.send_response(200)
+            self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Content-Length", str(info.st_size))
+            self.send_header("Content-Disposition", "attachment; filename*=UTF-8''" + quote(path.name, safe=""))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Session-ID", GENERATION)
+            self.end_headers()
+            try:
+                remaining = info.st_size
+                while remaining:
+                    chunk = source.read(min(1024 * 1024, remaining))
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+                    remaining -= len(chunk)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+
     def do_GET(self):
         if not self.authorized():
             return
+        request = urlsplit(self.path)
+        if request.path == "/download":
+            return self.download(request.query)
         if self.path not in {"/health", "/state", "/screenshot"}:
             return self.send(404, {"error": "Unknown endpoint"})
         try:
