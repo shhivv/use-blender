@@ -3,8 +3,7 @@
 Blender in a Docker container, ready for computer-use agents. Take screenshots,
 send mouse and keyboard input, and optionally execute Python through a small REST API.
 
-Runs independently, with no account, API key, or Isle dependency. Uses software
-rendering, so no GPU is required. No video streaming or bundled agent framework.
+Uses software rendering, so no GPU is required. No video streaming or bundled agent framework.
 
 ## Get started
 
