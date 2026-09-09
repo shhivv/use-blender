@@ -2,6 +2,7 @@ services:
   blender:
     image: use-blender:latest
     build: .
+    pull_policy: build
     ports:
       - "127.0.0.1:${BLENDER_PORT:-8765}:8000"
     volumes:

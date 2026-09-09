@@ -17,6 +17,4 @@ the installed package inventory can be obtained with:
 docker run --rm --entrypoint dpkg-query use-blender:latest -W
 ```
 
-This checkout builds a local image. Before distributing a binary image, include
-the corresponding source and notices required by the bundled software licenses
-in that release's distribution process.
+This project is distributed as source. The Dockerfile builds the image locally.
